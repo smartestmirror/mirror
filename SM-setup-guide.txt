@@ -1,0 +1,167 @@
+﻿1. Format disk
+   1. Go to https://www.sdcard.org/downloads/formatter_4/eula_mac/index.html (mac version)
+   2. Accept at bottom and download
+   3. Connect SD card to Mac
+   4. Install SD software
+   5. Run SD format on SD card
+   6. Check if empty
+1. Install Raspbian
+   1. Go to  https://www.raspberrypi.org/downloads/raspbian/
+   2. Download Raspbian Stretch with desktop
+   3. Go to https://www.balena.io/etcher/
+   4. Download balenaEtcher and install
+   5. Open balenaEtcher
+      1. Select raspbian image you just downloaded
+      2. Check its selecting the correct SD card
+      3. Click Flash!
+1. Setup Raspberry Pi
+   1. Insert flashed SD card
+   2. Connect HDMI to display
+   3. (for development only) Connect USB for keyboard and mouse
+   4. Connect USB webcam
+   5. Connect 3.5 audio
+   6. Connect Breakout Board to Breadboard
+
+
+                         
+      1. PIR motion sensor
+                         
+1. Connect PIR Power (VCC) to pin 2 (5V)
+2. Connect PIR High/Low Output to pin 19 (GPIO10)
+3. Connect PIR GND to pin 6 (Ground)
+
+
+      1. Gesture sensor
+
+
+                                         
+         1. Connect Sensor BCM 2 to pin 3 (GPIO 2)
+         2. Connect Sensor BCM 3 to pin 5 (GPIO 3)
+         3. **Connect Sensor BCM 17 to pin 8 (GPIO 14)
+         4. **Connect Sensor BCM 27 to pin 10 (GPIO 15)
+         5. Connect Sensor pin 9 Ground to pin 9 (Ground)
+         6. Connect Sensor pin 17 3v3 Power to pin 17 (3v3 Power)
+   1. Connect power to boot up
+   2. Follow basic setup and input wifi details. It should update and reboot.
+1. Configure setting
+   1. Disable screensaver
+      1. Install x11-xserver-utils package 
+         1. $ sudo apt-get install x11-xserver-utils
+         2. $ sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
+         3. Add to file and save
+@xset s noblank
+@xset s off
+@xset -dpms
+   1. Display setup
+      1. Go to Preferences -> Appearance Settings
+      2. Desktop settings:
+         1. Layout: No Image
+         2. Color: #000000
+         3. Text Color: #8A8A8A
+         4. Uncheck: Documents, Wastebasket, and Mounted Disks
+      1. Menu Bar Settings:
+         1. Size: Small
+         2. Position: Top
+         3. Color: #000000
+         4. Text Color: #8A8A8A
+      1. OK to save
+
+
+   1. Got to preferences -> Raspberry Pi Configuration -> Interfaces
+      1. Camera:                 Enable
+      2. SSH:                         Enable
+      3. VNC:                        Enable
+      4. I2C:                        Enable
+      5. Remote GPIO                Enable
+   1. Yes to reboot
+1. Set up for development
+   1. Set up SSH
+      1. Get IP address
+         1. In terminal $ ifconfig
+         2. Look in wlan0: …. Find inet address… probably starts with 192
+         3. Another option is to hover over the wifi icon: wlan0:.....
+      1. From working computer
+         1. Open terminal
+         2. $ ssh pi@192.168.X.XXX
+         3. Enter password from pi
+   1. Set up file in finder access (mac)
+      1. $ sudo apt-get update 
+      2. $ sudo apt-get install netatalk
+      3. Open finder in mac
+      4. Cmd + k   to open connect to server
+      5. afp://192.168.X.XXX    and connect
+      6. Change name to ‘pi’
+      7. Enter pi password
+      8. Finder should open the home directory of Rpi
+1. Set up working Directory
+   1. $ mkdir ~/sm
+1. Connect to Temple WiFi
+   1. GCUzToF7Us#A
+   2. $  sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+   3.      4. Add code in red box
+network={
+ssid="tusecurewireless"
+scan_ssid=1
+key_mgmt=WPA-EAP
+group=CCMP TKIP
+eap=PEAP
+identity="tugXXXX"
+password="password"
+phase1="peapver=0"
+phase2="MSCHAPV2"
+}
+   1. Change TUid and password
+   2. Reboot
+   3. Tusecure should auto connect
+   1. Install base magic mirror for dependencies 
+   1. $ bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"
+   2. When asked: Do you want use pm2 for auto starting of your MagicMirror (y/N)? 
+   1. n
+   1. When asked: Do you want to disable screen saver:?
+   1. y
+   1. It should start MM on its own. Reboot to make sure it is auto starting
+   1. Combine MM with Smartest Mirror
+   1. $ cd sm
+   2. Clone from Smartest Mirror github
+   1. git clone https://github.com/smartestmirror/mirror.git
+   1. Update auto start
+   1. Make sure pm2 is installed and updated
+   1. $ sudo npm install -g pm2
+   1. Delete old auto start
+   1. $ pm2 delete MagicMirror
+   1. Set up PATH for pm2
+   1. $ pm2 delete MagicMirror
+   2. It should return a command. Copy, paste and run command
+   1. Make startup script
+   1. $ cd ~
+   2. $ nano mm.sh
+   3. This should open up nano. Add the following lines:
+                                        cd ~/SmartestMirror/MagicMirror
+DISPLAY=:0 npm start
+   1. CTRL-X    (to save/exit)
+   2. Save modified buffer?     Y
+   3. Enter   (saves and exits nano)
+   4. $ chmod +x mm.sh
+   5. $ pm2 start mm.sh
+   6. $ pm2 save
+   7. $ sudo reboot     (to make sure it's working. Should load a few seconds after desktop opens)
+
+
+   1.  Gesture sensor setup
+   1. curl -sS get.pimoroni.com/skywriter | bash
+   2. Change pin locations
+   1. $ sudo nano /usr/lib/python3/dist-packages/skywriter.py
+   2.  Change SW_RESET_PIN from 17 to 14
+   3. Change SW_XFER_PIN from 27 to 15
+   4. $ sudo nano /usr/lib/python2.7/dist-packages/skywriter.py
+   5. Same changes
+   6. $ cd ~
+   7. $ sudo pip install pynput
+   8. $ sudo pip3 install pynput
+   9. You must run this from the pi to work
+   1. $ ~/sm/mirror/gesture/hand-gest.py
+   1. Adding volume gestures
+   1. $ sudo pip3 install pyalsaaudio
+   2. $ cd ~/sm/mirror/gesture
+   3. $ python3 vol-gest.py
+   1.
