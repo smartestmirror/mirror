@@ -1,0 +1,9 @@
+#!/bin/sh
+#create user directories
+
+
+n=0
+while ! mkdir modules/MMM-Facial-Recognition-Tools/training_data/user$n
+do
+    n=$((n+1))
+done
